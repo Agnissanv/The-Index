@@ -6,10 +6,12 @@ interface Props {
   category: string;
   pricing: "free" | "freemium" | "paid";
   catalogNo: string;
+  website: string;
   featured?: boolean;
 }
 
-const { slug, name, tagline, category, pricing, catalogNo, featured } = Astro.props;
+const { slug, name, tagline, category, pricing, catalogNo, website, featured } = Astro.props;
+const logoDomain = new URL(website).hostname;
 
 const pricingLabel: Record<string, string> = {
   free: "Free",
