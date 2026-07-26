@@ -38,6 +38,7 @@ const tools = (await getCollection('tools')).filter((t) => t.data.category === c
             category={tool.data.category}
             pricing={tool.data.pricing}
             catalogNo={tool.data.catalogNo}
+            website={tool.data.website}
             featured={tool.data.featured}
           />
         ))}
