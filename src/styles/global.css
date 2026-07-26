@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/600-italic.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@theme {
+  --color-paper: #ECEFF3;
+  --color-card: #FFFFFF;
+  --color-ink: #14181F;
+  --color-ink-muted: #5B6472;
+  --color-line: #D3D8E0;
+  --color-brass: #A9803D;
+  --color-brass-soft: #F0E4CE;
+  --color-teal: #1F6F78;
+  --color-teal-soft: #DCEDEC;
+
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--color-line) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+::selection {
+  background-color: var(--color-brass-soft);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Card-catalog signature: punch hole */
+.catalog-card {
+  position: relative;
+}
+
+.catalog-card::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--color-paper);
+  border: 1.5px solid var(--color-line);
+  z-index: 10;
+}
+
+.typing-cursor::after {
+  content: "|";
+  animation: blink 1s step-start infinite;
+  color: var(--color-teal);
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}

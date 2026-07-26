@@ -1,0 +1,86 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const tools = await getCollection('tools');
+  return tools.map((tool) => ({
+    params: { slug: tool.id },
+    props: { tool },
+  }));
+}
+
+const { tool } = Astro.props;
+const { data } = tool;
+const { Content } = await render(tool);
+
+const pricingLabel: Record<string, string> = {
+  free: "Free",
+  freemium: "Freemium",
+  paid: "Paid",
+};
+---
+
+<Layout
+  title={`${data.name} — ${data.tagline}`}
+  description={data.description}
+>
+  <article class="max-w-3xl mx-auto px-6 py-14">
+    <a href="/" class="font-mono text-xs text-ink-muted hover:text-teal">&larr; Back to catalog</a>
+
+    <div class="catalog-card bg-card border border-line rounded-xl p-8 pt-10 mt-6">
+      <div class="flex items-center justify-between mb-5">
+        <span class="font-mono text-xs text-ink-muted tracking-wider">No. {data.catalogNo}</span>
+        <span class="font-mono text-[11px] uppercase tracking-wider bg-teal-soft text-teal border border-teal/30 rounded-full px-2.5 py-1">
+          {pricingLabel[data.pricing]}{data.startingPrice ? ` · ${data.startingPrice}` : ""}
+        </span>
+      </div>
+
+      <h1 class="font-display text-3xl sm:text-4xl font-semibold">{data.name}</h1>
+      <p class="text-ink-muted text-lg mt-2">{data.tagline}</p>
+
+      <a
+        href={data.affiliateUrl ?? data.website}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        class="inline-flex items-center gap-2 mt-6 bg-ink text-paper font-mono text-sm uppercase tracking-wide rounded-full px-5 py-3 hover:bg-teal transition-colors"
+      >
+        Visit {data.name} &rarr;
+      </a>
+
+      <div class="prose-content mt-8 pt-8 border-t border-dashed border-line text-[15px] leading-relaxed text-ink">
+        <p>{data.description}</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-6 mt-8 pt-8 border-t border-dashed border-line">
+        <div>
+          <h2 class="font-mono text-xs uppercase tracking-wide text-teal mb-3">Strengths</h2>
+          <ul class="space-y-2">
+            {data.pros.map((pro: string) => (
+              <li class="text-sm flex gap-2">
+                <span class="text-teal mt-0.5">+</span>
+                <span>{pro}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2 class="font-mono text-xs uppercase tracking-wide text-brass mb-3">Trade-offs</h2>
+          <ul class="space-y-2">
+            {data.cons.map((con: string) => (
+              <li class="text-sm flex gap-2">
+                <span class="text-brass mt-0.5">&minus;</span>
+                <span>{con}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-8 border-t border-dashed border-line">
+        <h2 class="font-mono text-xs uppercase tracking-wide text-ink-muted mb-2">Best for</h2>
+        <p class="text-sm">{data.bestFor}</p>
+      </div>
+    </div>
+  </article>
+</Layout>

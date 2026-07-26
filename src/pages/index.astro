@@ -1,0 +1,145 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { categoryList as categories } from '../data/categories';
+
+const allTools = (await getCollection('tools')).sort(
+  (a, b) => Number(a.data.catalogNo) - Number(b.data.catalogNo)
+);
+const featured = allTools.filter((t) => t.data.featured);
+---
+
+<Layout
+  title="The Index"
+  description="A hand-checked, no-fluff catalog of AI tools for writing, image, video, audio, coding, and productivity — find the right tool for the job."
+>
+  <section class="max-w-6xl mx-auto px-6 pt-16 pb-12">
+    <p class="font-mono text-xs uppercase tracking-widest text-brass mb-4">Est. 2026 · Vol. 01</p>
+    <h1 class="font-display text-4xl sm:text-6xl leading-[1.05] max-w-3xl">
+      A catalog for finding the <em class="italic text-teal">right</em> AI tool, not just <em class="italic">a</em> tool.
+    </h1>
+    <p class="text-ink-muted text-lg mt-6 max-w-xl">
+      Every entry is read, tried, and filed by hand. No listicle filler, no "top 100" clickbait.
+    </p>
+
+    <div class="mt-10 max-w-xl">
+      <label for="q" class="font-mono text-xs uppercase tracking-wide text-ink-muted block mb-2">
+        Search the catalog
+      </label>
+      <div class="relative">
+        <input
+          id="q"
+          type="text"
+          class="w-full bg-card border border-line rounded-lg px-4 py-3.5 pr-12 font-mono text-sm placeholder:text-ink-muted focus:border-teal outline-none"
+          autocomplete="off"
+        />
+        <svg
+          class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-6 py-8 border-t border-line">
+    <div class="flex flex-wrap gap-2">
+      {categories.map((cat) => (
+        <a
+          href={`/category/${cat.slug}`}
+          class="font-mono text-xs uppercase tracking-wide border border-line rounded-full px-3.5 py-1.5 hover:border-teal hover:text-teal transition-colors bg-card"
+        >
+          {cat.label}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-6 py-8">
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl font-semibold">Featured entries</h2>
+      <span class="font-mono text-xs text-ink-muted">{featured.length} tools</span>
+    </div>
+    <div id="tool-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {featured.map((tool) => (
+        <ToolCard
+          slug={tool.id}
+          name={tool.data.name}
+          tagline={tool.data.tagline}
+          category={tool.data.category}
+          pricing={tool.data.pricing}
+          catalogNo={tool.data.catalogNo}
+          featured={tool.data.featured}
+        />
+      ))}
+    </div>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-6 py-8 pb-24">
+    <div class="flex items-baseline justify-between mb-6">
+      <h2 class="font-display text-2xl font-semibold">Full catalog</h2>
+      <span class="font-mono text-xs text-ink-muted">{allTools.length} tools</span>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {allTools.map((tool) => (
+        <ToolCard
+          slug={tool.id}
+          name={tool.data.name}
+          tagline={tool.data.tagline}
+          category={tool.data.category}
+          pricing={tool.data.pricing}
+          catalogNo={tool.data.catalogNo}
+          featured={tool.data.featured}
+        />
+      ))}
+    </div>
+  </section>
+
+  <script>
+    const phrases = [
+      "best ai tool for video editing",
+      "ai tool for writing blog posts",
+      "ai voice generator",
+      "ai coding assistant",
+      "ai tool for presentations",
+    ];
+    const input = document.getElementById("q") as HTMLInputElement | null;
+    if (input) {
+      let phraseIndex = 0;
+      let charIndex = 0;
+      let deleting = false;
+
+      function tick() {
+        const current = phrases[phraseIndex];
+        if (!deleting) {
+          charIndex++;
+          if (charIndex > current.length) {
+            deleting = true;
+            setTimeout(tick, 1200);
+            return;
+          }
+        } else {
+          charIndex--;
+          if (charIndex < 0) {
+            deleting = false;
+            phraseIndex = (phraseIndex + 1) % phrases.length;
+            charIndex = 0;
+          }
+        }
+        if (input) input.placeholder = current.slice(0, charIndex);
+        setTimeout(tick, deleting ? 30 : 55);
+      }
+      tick();
+
+      input.addEventListener("input", () => {
+        const value = input.value.toLowerCase();
+        document.querySelectorAll<HTMLAnchorElement>("#tool-grid a").forEach((card) => {
+          const text = card.textContent?.toLowerCase() ?? "";
+          card.style.display = text.includes(value) ? "" : "none";
+        });
+      });
+    }
+  </script>
+</Layout>
