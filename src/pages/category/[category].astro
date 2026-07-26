@@ -28,6 +28,7 @@ const tools = (await getCollection('tools')).filter((t) => t.data.category === c
     <div class="flex items-baseline justify-between mb-6">
       <h2 class="font-mono text-xs uppercase tracking-wide text-ink-muted">{tools.length} entries</h2>
     </div>
+    
     {tools.length > 0 ? (
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {tools.map((tool) => (
