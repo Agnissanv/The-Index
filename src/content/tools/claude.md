@@ -15,6 +15,6 @@ cons:
   - "Smaller plugin/integration ecosystem than ChatGPT"
   - "Free tier has tighter usage limits during peak times"
 bestFor: "Long-document work, careful writing, and coding tasks"
-featured: false
+featured: true
 catalogNo: "031"
 ---

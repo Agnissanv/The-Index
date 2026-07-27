@@ -15,6 +15,6 @@ cons:
   - "Most value requires being inside the Google ecosystem"
   - "Workspace integration features mostly need a paid plan"
 bestFor: "Users already living inside Gmail, Docs, and Google Search"
-featured: false
+featured: true
 catalogNo: "022"
 ---
