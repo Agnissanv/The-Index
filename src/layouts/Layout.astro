@@ -24,6 +24,7 @@ const fullTitle = title === siteName ? title : `${title} · ${siteName}`;
     <meta name="generator" content={Astro.generator} />
 
     <meta property="og:title" content={fullTitle} />
+    <meta property="og:site_name" content={siteName} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:image" content={new URL('/og-image.png', Astro.site).href} />
