@@ -29,4 +29,17 @@ const tools = defineCollection({
   }),
 });
 
-export const collections = { tools };
+const posts = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/posts' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    publishDate: z.date(),
+    category: z.enum([
+      'writing', 'image', 'video', 'audio', 'coding',
+      'productivity', 'research', 'design',
+    ]).optional(),
+  }),
+});
+
+export const collections = { tools, posts };
