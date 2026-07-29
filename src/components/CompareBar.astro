@@ -1,0 +1,92 @@
+<div id="compare-bar" class="fixed bottom-0 left-0 right-0 z-40 hidden">
+  <div class="max-w-3xl mx-auto m-4 bg-ink text-paper rounded-full shadow-lg px-5 py-3 flex items-center justify-between gap-4">
+    <div id="compare-bar-list" class="font-mono text-xs text-paper/70 truncate"></div>
+    <div class="flex items-center gap-3 shrink-0">
+      <button id="compare-bar-clear" class="font-mono text-xs uppercase tracking-wide text-paper/70 hover:text-paper">Clear</button>
+      <a id="compare-bar-link" href="/compare" class="font-mono text-xs uppercase tracking-wide bg-teal text-paper rounded-full px-4 py-2 hover:bg-teal/80 transition-colors">
+        Compare (<span id="compare-bar-count">0</span>) &rarr;
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  type CompareItem = { slug: string; name: string };
+  const STORAGE_KEY = "compareTools";
+  const MAX_ITEMS = 3;
+
+  function getStored(): CompareItem[] {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function setStored(items: CompareItem[]) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  function updateBar() {
+    const items = getStored();
+    const bar = document.getElementById("compare-bar");
+    const list = document.getElementById("compare-bar-list");
+    const count = document.getElementById("compare-bar-count");
+    const link = document.getElementById("compare-bar-link") as HTMLAnchorElement | null;
+    if (!bar || !list || !count || !link) return;
+
+    if (items.length === 0) {
+      bar.classList.add("hidden");
+      return;
+    }
+    bar.classList.remove("hidden");
+    list.textContent = items.map((i) => i.name).join(" · ");
+    count.textContent = String(items.length);
+    link.href = `/compare?tools=${items.map((i) => i.slug).join(",")}`;
+  }
+
+  function syncCheckboxes() {
+    const items = getStored();
+    const slugs = new Set(items.map((i) => i.slug));
+    document.querySelectorAll<HTMLInputElement>(".compare-checkbox").forEach((box) => {
+      box.checked = slugs.has(box.dataset.slug || "");
+    });
+  }
+
+  function handleCheckboxChange(e: Event) {
+    const box = e.target as HTMLInputElement;
+    const slug = box.dataset.slug || "";
+    const name = box.dataset.name || slug;
+    let items = getStored();
+
+    if (box.checked) {
+      if (items.length >= MAX_ITEMS) {
+        box.checked = false;
+        alert(`You can compare up to ${MAX_ITEMS} tools at a time.`);
+        return;
+      }
+      items.push({ slug, name });
+    } else {
+      items = items.filter((i) => i.slug !== slug);
+    }
+    setStored(items);
+    updateBar();
+  }
+
+  document.addEventListener("change", (e) => {
+    const target = e.target as HTMLElement;
+    if (target && target.classList.contains("compare-checkbox")) {
+      handleCheckboxChange(e);
+    }
+  });
+
+  document.getElementById("compare-bar-clear")?.addEventListener("click", () => {
+    setStored([]);
+    syncCheckboxes();
+    updateBar();
+  });
+
+  syncCheckboxes();
+  updateBar();
+</script>

@@ -1,0 +1,110 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+
+const allTools = await getCollection('tools');
+const requestedSlugs = (Astro.url.searchParams.get('tools') || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const tools = requestedSlugs
+  .map((slug) => allTools.find((t) => t.id === slug))
+  .filter((t): t is NonNullable<typeof t> => Boolean(t));
+
+const pricingLabel: Record<string, string> = {
+  free: "Free",
+  freemium: "Freemium",
+  paid: "Paid",
+};
+---
+
+<Layout
+  title="Compare AI Tools"
+  description="Compare AI tools side by side: pricing, strengths, and trade-offs."
+>
+  <section class="max-w-6xl mx-auto px-6 pt-14 pb-8">
+    <a href="/" class="font-mono text-xs text-ink-muted hover:text-teal">&larr; Back to catalog</a>
+    <p class="font-mono text-xs uppercase tracking-widest text-brass mt-6 mb-3">Compare</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-semibold">Side by side</h1>
+    <p class="text-ink-muted text-lg mt-3 max-w-xl">
+      Pick tools from the catalog to compare pricing, strengths, and trade-offs in one view.
+    </p>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-6 pb-24">
+    {tools.length === 0 ? (
+      <div class="bg-card border border-line rounded-lg p-10 text-center">
+        <p class="text-ink-muted">No tools selected yet.</p>
+        <a href="/" class="inline-block mt-4 font-mono text-xs uppercase tracking-wide bg-ink text-paper rounded-full px-5 py-3 hover:bg-teal transition-colors">
+          Browse the catalog
+        </a>
+      </div>
+    ) : (
+      <div class="grid gap-4" style={`grid-template-columns: repeat(${tools.length}, minmax(0, 1fr))`}>
+        {tools.map((tool) => (
+          <div class="catalog-card bg-card border border-line rounded-lg p-6 pt-8">
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${new URL(tool.data.website).hostname}&sz=64`}
+              alt=""
+              width="32"
+              height="32"
+              class="rounded-md mb-3"
+              loading="lazy"
+            />
+            <h2 class="font-display text-xl font-semibold">
+              <a href={`/tools/${tool.id}`} class="hover:text-teal transition-colors">{tool.data.name}</a>
+            </h2>
+            <p class="text-sm text-ink-muted mt-1">{tool.data.tagline}</p>
+
+            <div class="mt-4 pt-4 border-t border-dashed border-line">
+              <p class="font-mono text-[11px] uppercase tracking-wide text-ink-muted mb-1">Pricing</p>
+              <p class="text-sm">
+                {pricingLabel[tool.data.pricing]}
+                {tool.data.startingPrice ? ` · ${tool.data.startingPrice}` : ""}
+              </p>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-dashed border-line">
+              <p class="font-mono text-[11px] uppercase tracking-wide text-teal mb-2">Strengths</p>
+              <ul class="space-y-1.5">
+                {tool.data.pros.map((pro) => (
+                  <li class="text-sm flex gap-2">
+                    <span class="text-teal mt-0.5">+</span>
+                    <span>{pro}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-dashed border-line">
+              <p class="font-mono text-[11px] uppercase tracking-wide text-brass mb-2">Trade-offs</p>
+              <ul class="space-y-1.5">
+                {tool.data.cons.map((con) => (
+                  <li class="text-sm flex gap-2">
+                    <span class="text-brass mt-0.5">&minus;</span>
+                    <span>{con}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-dashed border-line">
+              <p class="font-mono text-[11px] uppercase tracking-wide text-ink-muted mb-1">Best for</p>
+              <p class="text-sm">{tool.data.bestFor}</p>
+            </div>
+
+            
+              href={tool.data.affiliateUrl ?? tool.data.website}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="block text-center mt-5 font-mono text-xs uppercase tracking-wide bg-ink text-paper rounded-full px-4 py-2.5 hover:bg-teal transition-colors"
+            >
+              Visit {tool.data.name} &rarr;
+            </a>
+          </div>
+        ))}
+      </div>
+    )}
+  </section>
+</Layout>
