@@ -3,14 +3,18 @@ import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
 const allTools = await getCollection('tools');
-const requestedSlugs = (Astro.url.searchParams.get('tools') || '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-const tools = requestedSlugs
-  .map((slug) => allTools.find((t) => t.id === slug))
-  .filter((t): t is NonNullable<typeof t> => Boolean(t));
+const toolsData = allTools.map((t) => ({
+  slug: t.id,
+  name: t.data.name,
+  tagline: t.data.tagline,
+  website: t.data.website,
+  affiliateUrl: t.data.affiliateUrl ?? t.data.website,
+  pricing: t.data.pricing,
+  startingPrice: t.data.startingPrice ?? "",
+  pros: t.data.pros,
+  cons: t.data.cons,
+  bestFor: t.data.bestFor,
+}));
 
 const pricingLabel: Record<string, string> = {
   free: "Free",
@@ -33,19 +37,83 @@ const pricingLabel: Record<string, string> = {
   </section>
 
   <section class="max-w-6xl mx-auto px-6 pb-24">
-    {tools.length === 0 ? (
-      <div class="bg-card border border-line rounded-lg p-10 text-center">
-        <p class="text-ink-muted">No tools selected yet.</p>
-        <a href="/" class="inline-block mt-4 font-mono text-xs uppercase tracking-wide bg-ink text-paper rounded-full px-5 py-3 hover:bg-teal transition-colors">
-          Browse the catalog
-        </a>
-      </div>
-    ) : (
-      <div class="grid gap-4" style={`grid-template-columns: repeat(${tools.length}, minmax(0, 1fr))`}>
-        {tools.map((tool) => (
+    <div id="compare-empty" class="bg-card border border-line rounded-lg p-10 text-center hidden">
+      <p class="text-ink-muted">No tools selected yet.</p>
+      <a href="/" class="inline-block mt-4 font-mono text-xs uppercase tracking-wide bg-ink text-paper rounded-full px-5 py-3 hover:bg-teal transition-colors">
+        Browse the catalog
+      </a>
+    </div>
+
+    <div id="compare-grid" class="grid gap-4 hidden"></div>
+  </section>
+
+  <script type="application/json" id="tools-data" set:html={JSON.stringify(toolsData)} />
+  <script type="application/json" id="pricing-labels" set:html={JSON.stringify(pricingLabel)} />
+
+  <script>
+    type ToolData = {
+      slug: string;
+      name: string;
+      tagline: string;
+      website: string;
+      affiliateUrl: string;
+      pricing: string;
+      startingPrice: string;
+      pros: string[];
+      cons: string[];
+      bestFor: string;
+    };
+
+    const dataEl = document.getElementById("tools-data");
+    const labelsEl = document.getElementById("pricing-labels");
+    const allTools: ToolData[] = dataEl ? JSON.parse(dataEl.textContent || "[]") : [];
+    const pricingLabel: Record<string, string> = labelsEl ? JSON.parse(labelsEl.textContent || "{}") : {};
+
+    const params = new URLSearchParams(window.location.search);
+    const slugs = (params.get("tools") || "").split(",").map((s) => s.trim()).filter(Boolean);
+    const selected = slugs
+      .map((slug) => allTools.find((t) => t.slug === slug))
+      .filter((t): t is ToolData => Boolean(t));
+
+    const emptyEl = document.getElementById("compare-empty");
+    const gridEl = document.getElementById("compare-grid");
+
+    function escapeHtml(str: string) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    if (!emptyEl || !gridEl) {
+      // Nothing to render into, stop here
+    } else if (selected.length === 0) {
+      emptyEl.classList.remove("hidden");
+    } else {
+      gridEl.classList.remove("hidden");
+      gridEl.style.gridTemplateColumns = `repeat(${selected.length}, minmax(0, 1fr))`;
+
+      gridEl.innerHTML = selected.map((tool) => {
+        const domain = new URL(tool.website).hostname;
+        const priceLine = pricingLabel[tool.pricing] + (tool.startingPrice ? ` · ${tool.startingPrice}` : "");
+
+        const prosHtml = tool.pros.map((pro) => `
+          <li class="text-sm flex gap-2">
+            <span class="text-teal mt-0.5">+</span>
+            <span>${escapeHtml(pro)}</span>
+          </li>
+        `).join("");
+
+        const consHtml = tool.cons.map((con) => `
+          <li class="text-sm flex gap-2">
+            <span class="text-brass mt-0.5">&minus;</span>
+            <span>${escapeHtml(con)}</span>
+          </li>
+        `).join("");
+
+        return `
           <div class="catalog-card bg-card border border-line rounded-lg p-6 pt-8">
             <img
-              src={`https://www.google.com/s2/favicons?domain=${new URL(tool.data.website).hostname}&sz=64`}
+              src="https://www.google.com/s2/favicons?domain=${domain}&sz=64"
               alt=""
               width="32"
               height="32"
@@ -53,58 +121,41 @@ const pricingLabel: Record<string, string> = {
               loading="lazy"
             />
             <h2 class="font-display text-xl font-semibold">
-              <a href={`/tools/${tool.id}`} class="hover:text-teal transition-colors">{tool.data.name}</a>
+              <a href="/tools/${tool.slug}" class="hover:text-teal transition-colors">${escapeHtml(tool.name)}</a>
             </h2>
-            <p class="text-sm text-ink-muted mt-1">{tool.data.tagline}</p>
+            <p class="text-sm text-ink-muted mt-1">${escapeHtml(tool.tagline)}</p>
 
             <div class="mt-4 pt-4 border-t border-dashed border-line">
               <p class="font-mono text-[11px] uppercase tracking-wide text-ink-muted mb-1">Pricing</p>
-              <p class="text-sm">
-                {pricingLabel[tool.data.pricing]}
-                {tool.data.startingPrice ? ` · ${tool.data.startingPrice}` : ""}
-              </p>
+              <p class="text-sm">${escapeHtml(priceLine)}</p>
             </div>
 
             <div class="mt-4 pt-4 border-t border-dashed border-line">
               <p class="font-mono text-[11px] uppercase tracking-wide text-teal mb-2">Strengths</p>
-              <ul class="space-y-1.5">
-                {tool.data.pros.map((pro) => (
-                  <li class="text-sm flex gap-2">
-                    <span class="text-teal mt-0.5">+</span>
-                    <span>{pro}</span>
-                  </li>
-                ))}
-              </ul>
+              <ul class="space-y-1.5">${prosHtml}</ul>
             </div>
 
             <div class="mt-4 pt-4 border-t border-dashed border-line">
               <p class="font-mono text-[11px] uppercase tracking-wide text-brass mb-2">Trade-offs</p>
-              <ul class="space-y-1.5">
-                {tool.data.cons.map((con) => (
-                  <li class="text-sm flex gap-2">
-                    <span class="text-brass mt-0.5">&minus;</span>
-                    <span>{con}</span>
-                  </li>
-                ))}
-              </ul>
+              <ul class="space-y-1.5">${consHtml}</ul>
             </div>
 
             <div class="mt-4 pt-4 border-t border-dashed border-line">
               <p class="font-mono text-[11px] uppercase tracking-wide text-ink-muted mb-1">Best for</p>
-              <p class="text-sm">{tool.data.bestFor}</p>
+              <p class="text-sm">${escapeHtml(tool.bestFor)}</p>
             </div>
 
             
-              href={tool.data.affiliateUrl ?? tool.data.website}
+              href="${tool.affiliateUrl}"
               target="_blank"
               rel="noopener noreferrer sponsored"
               class="block text-center mt-5 font-mono text-xs uppercase tracking-wide bg-ink text-paper rounded-full px-4 py-2.5 hover:bg-teal transition-colors"
             >
-              Visit {tool.data.name} &rarr;
+              Visit ${escapeHtml(tool.name)} &rarr;
             </a>
           </div>
-        ))}
-      </div>
-    )}
-  </section>
+        `;
+      }).join("");
+    }
+  </script>
 </Layout>
