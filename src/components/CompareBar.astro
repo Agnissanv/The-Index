@@ -89,4 +89,57 @@
 
   syncCheckboxes();
   updateBar();
+
+  // --- Favorites ---
+  const FAV_KEY = "favoriteTools";
+
+  function getFavorites(): CompareItem[] {
+    try {
+      const raw = localStorage.getItem(FAV_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function setFavorites(items: CompareItem[]) {
+    localStorage.setItem(FAV_KEY, JSON.stringify(items));
+  }
+
+  function updateFavoritesBadge() {
+    const count = getFavorites().length;
+    const badge = document.getElementById("favorites-count");
+    if (badge) badge.textContent = count > 0 ? String(count) : "";
+  }
+
+  function syncFavoriteButtons() {
+    const favSlugs = new Set(getFavorites().map((i) => i.slug));
+    document.querySelectorAll<HTMLButtonElement>(".favorite-toggle").forEach((btn) => {
+      const isFav = favSlugs.has(btn.dataset.slug || "");
+      const star = btn.querySelector(".favorite-star");
+      if (star) star.innerHTML = isFav ? "&#9733;" : "&#9734;";
+      btn.classList.toggle("text-brass", isFav);
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest(".favorite-toggle") as HTMLButtonElement | null;
+    if (!btn) return;
+
+    const slug = btn.dataset.slug || "";
+    const name = btn.dataset.name || slug;
+    let favorites = getFavorites();
+
+    if (favorites.some((i) => i.slug === slug)) {
+      favorites = favorites.filter((i) => i.slug !== slug);
+    } else {
+      favorites.push({ slug, name });
+    }
+    setFavorites(favorites);
+    syncFavoriteButtons();
+    updateFavoritesBadge();
+  });
+
+  syncFavoriteButtons();
+  updateFavoritesBadge();
 </script>

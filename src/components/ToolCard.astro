@@ -54,16 +54,29 @@ const pricingLabel: Record<string, string> = {
       <span class="font-mono text-[11px] uppercase tracking-wide text-teal">{pricingLabel[pricing]}</span>
     </div>
 
-    <label class="relative z-20 mt-3 flex items-center gap-2 text-xs font-mono text-ink-muted cursor-pointer w-max hover:text-teal transition-colors pointer-events-auto">
-      <input
-        type="checkbox"
-        class="compare-checkbox w-3.5 h-3.5 accent-teal cursor-pointer"
+    <div class="relative z-20 mt-3 flex items-center gap-3 pointer-events-auto">
+      <label class="flex items-center gap-2 text-xs font-mono text-ink-muted cursor-pointer w-max hover:text-teal transition-colors">
+        <input
+          type="checkbox"
+          class="compare-checkbox w-3.5 h-3.5 accent-teal cursor-pointer"
+          data-slug={slug}
+          data-name={name}
+          data-category={category}
+          data-pricing={pricingLabel[pricing]}
+        />
+        Compare
+      </label>
+
+      <button
+        type="button"
+        class="favorite-toggle flex items-center gap-1 text-xs font-mono text-ink-muted hover:text-brass transition-colors"
         data-slug={slug}
         data-name={name}
-        data-category={category}
-        data-pricing={pricingLabel[pricing]}
-      />
-      Compare
-    </label>
+        aria-label={`Save ${name} to favorites`}
+      >
+        <span class="favorite-star">&#9734;</span>
+        Save
+      </button>
+    </div>
   </div>
 </div>

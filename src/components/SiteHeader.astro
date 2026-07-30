@@ -5,40 +5,21 @@ import { categoryList as categories } from '../data/categories';
 <header class="border-b border-line bg-paper/90 backdrop-blur sticky top-0 z-30">
   <div class="max-w-6xl mx-auto px-6">
     <div class="flex items-center justify-between h-16">
-      <a href="/" class="flex items-center">
-        <img src="/logo.png" alt="The Index" class="h-9 w-auto" />
-      </a>
+      <a href="/" class="flex items-center"><img src="/logo.png" alt="The Index" class="h-9 w-auto" /></a>
       <nav class="hidden md:flex items-center gap-1 text-sm">
-        <a
-          href="/blog"
-          class="px-3 py-1.5 rounded-md text-ink-muted hover:text-ink hover:bg-white transition-colors"
-        >
-          Blog
-        </a>
+        <a href="/blog" class="px-3 py-1.5 rounded-md text-ink-muted hover:text-ink hover:bg-white transition-colors">Blog</a>
         {categories.map((cat) => (
-          <a
-            href={`/category/${cat.slug}`}
-            class="px-3 py-1.5 rounded-md text-ink-muted hover:text-ink hover:bg-white transition-colors"
-          >
-            {cat.label}
-          </a>
+          <a href={`/category/${cat.slug}`} class="px-3 py-1.5 rounded-md text-ink-muted hover:text-ink hover:bg-white transition-colors">{cat.label}</a>
         ))}
       </nav>
-      <a
-        href="/submit"
-        class="font-mono text-xs uppercase tracking-wide border border-ink rounded-full px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
-      >
-        Submit a tool
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="/favorites" class="relative font-mono text-xs uppercase tracking-wide text-ink-muted hover:text-brass transition-colors">Favorites<span id="favorites-count" class="ml-1 text-brass"></span></a>
+        <a href="/submit" class="font-mono text-xs uppercase tracking-wide border border-ink rounded-full px-4 py-2 hover:bg-ink hover:text-paper transition-colors">Submit a tool</a>
+      </div>
     </div>
     <nav class="md:hidden flex flex-wrap gap-1 pb-3 text-sm">
       {categories.map((cat) => (
-        <a
-          href={`/category/${cat.slug}`}
-          class="px-2.5 py-1 rounded-md text-ink-muted hover:text-ink hover:bg-white transition-colors text-xs"
-        >
-          {cat.label}
-        </a>
+        <a href={`/category/${cat.slug}`} class="px-2.5 py-1 rounded-md text-ink-muted hover:text-ink hover:bg-white transition-colors text-xs">{cat.label}</a>
       ))}
     </nav>
   </div>
