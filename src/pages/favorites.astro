@@ -1,0 +1,100 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+
+const allTools = await getCollection('tools');
+const toolsData = allTools.map((t) => ({
+  slug: t.id,
+  name: t.data.name,
+  tagline: t.data.tagline,
+  category: t.data.category,
+  website: t.data.website,
+  affiliateUrl: t.data.affiliateUrl ?? t.data.website,
+  pricing: t.data.pricing,
+  startingPrice: t.data.startingPrice ?? "",
+  catalogNo: t.data.catalogNo,
+}));
+
+const pricingLabel: Record<string, string> = {
+  free: "Free",
+  freemium: "Freemium",
+  paid: "Paid",
+};
+---
+
+<Layout title="Favorites" description="AI tools you've saved for later.">
+  <section class="max-w-6xl mx-auto px-6 pt-14 pb-8">
+    <a href="/" class="font-mono text-xs text-ink-muted hover:text-teal">&larr; Back to catalog</a>
+    <p class="font-mono text-xs uppercase tracking-widest text-brass mt-6 mb-3">Saved</p>
+    <h1 class="font-display text-4xl sm:text-5xl font-semibold">Your favorites</h1>
+    <p class="text-ink-muted text-lg mt-3 max-w-xl">Tools you've saved for later, kept right here in your browser.</p>
+  </section>
+
+  <section class="max-w-6xl mx-auto px-6 pb-24">
+    <div id="favorites-empty" class="bg-card border border-line rounded-lg p-10 text-center hidden">
+      <p class="text-ink-muted">No favorites saved yet.</p>
+      <a href="/" class="inline-block mt-4 font-mono text-xs uppercase tracking-wide bg-ink text-paper rounded-full px-5 py-3 hover:bg-teal transition-colors">Browse the catalog</a>
+    </div>
+
+    <div id="favorites-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 hidden"></div>
+  </section>
+
+  <script type="application/json" id="tools-data" set:html={JSON.stringify(toolsData)} />
+  <script type="application/json" id="pricing-labels" set:html={JSON.stringify(pricingLabel)} />
+
+  <script>
+    type ToolData = {
+      slug: string;
+      name: string;
+      tagline: string;
+      category: string;
+      website: string;
+      affiliateUrl: string;
+      pricing: string;
+      startingPrice: string;
+      catalogNo: string;
+    };
+
+    const dataEl = document.getElementById("tools-data");
+    const labelsEl = document.getElementById("pricing-labels");
+    const allTools: ToolData[] = dataEl ? JSON.parse(dataEl.textContent || "[]") : [];
+    const pricingLabel: Record<string, string> = labelsEl ? JSON.parse(labelsEl.textContent || "{}") : {};
+
+    type FavItem = { slug: string; name: string };
+    function getFavorites(): FavItem[] {
+      try {
+        const raw = localStorage.getItem("favoriteTools");
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    const favSlugs = getFavorites().map((f) => f.slug);
+    const selected = favSlugs
+      .map((slug) => allTools.find((t) => t.slug === slug))
+      .filter((t): t is ToolData => Boolean(t));
+
+    const emptyEl = document.getElementById("favorites-empty");
+    const gridEl = document.getElementById("favorites-grid");
+
+    function escapeHtml(str: string) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    if (emptyEl && gridEl) {
+      if (selected.length === 0) {
+        emptyEl.classList.remove("hidden");
+      } else {
+        gridEl.classList.remove("hidden");
+        gridEl.innerHTML = selected.map((tool) => {
+          const domain = new URL(tool.website).hostname;
+          const priceLine = pricingLabel[tool.pricing] + (tool.startingPrice ? ` · ${tool.startingPrice}` : "");
+          return `<div class="catalog-card bg-card border border-line rounded-lg p-5 pt-7"><div class="flex items-center justify-between mb-3"><div class="flex items-center gap-2"><img src="https://www.google.com/s2/favicons?domain=${domain}&sz=64" alt="" width="24" height="24" class="rounded-md" loading="lazy" /><span class="font-mono text-[11px] text-ink-muted tracking-wider">No. ${escapeHtml(tool.catalogNo)}</span></div></div><h3 class="font-display font-semibold text-xl leading-tight"><a href="/tools/${tool.slug}" class="hover:text-teal transition-colors">${escapeHtml(tool.name)}</a></h3><p class="text-sm text-ink-muted mt-1.5 leading-snug">${escapeHtml(tool.tagline)}</p><div class="flex items-center gap-2 mt-4 pt-4 border-t border-dashed border-line"><span class="font-mono text-[11px] uppercase tracking-wide text-ink-muted">${escapeHtml(tool.category)}</span><span class="text-line">&middot;</span><span class="font-mono text-[11px] uppercase tracking-wide text-teal">${escapeHtml(priceLine)}</span></div></div>`;
+        }).join("");
+      }
+    }
+  </script>
+</Layout>
