@@ -62,7 +62,7 @@ const featured = allTools.filter((t) => t.data.featured);
       <h2 class="font-display text-2xl font-semibold">Featured entries</h2>
       <span class="font-mono text-xs text-ink-muted">{featured.length} tools</span>
     </div>
-    <div id="tool-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="tool-grid grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {featured.map((tool) => (
         <ToolCard
           slug={tool.id}
@@ -83,7 +83,7 @@ const featured = allTools.filter((t) => t.data.featured);
       <h2 class="font-display text-2xl font-semibold">Full catalog</h2>
       <span class="font-mono text-xs text-ink-muted">{allTools.length} tools</span>
     </div>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="tool-grid grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {allTools.map((tool) => (
         <ToolCard
           slug={tool.id}
@@ -137,7 +137,7 @@ const featured = allTools.filter((t) => t.data.featured);
 
       input.addEventListener("input", () => {
         const value = input.value.toLowerCase();
-        document.querySelectorAll<HTMLAnchorElement>("#tool-grid a").forEach((card) => {
+        document.querySelectorAll<HTMLElement>(".tool-grid .catalog-card").forEach((card) => {
           const text = card.textContent?.toLowerCase() ?? "";
           card.style.display = text.includes(value) ? "" : "none";
         });
